@@ -1,3 +1,4 @@
+// EMS Backend - Production Ready
 import express from 'express';
 import cors from 'cors';
 import 'express-async-errors';
@@ -28,9 +29,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+const corsOrigin = process.env.CORS_ORIGIN || 'https://ems-frontend-ten-sandy.vercel.app';
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      process.env.CORS_ORIGIN || 'https://ems-frontend-ten-sandy.vercel.app',
+      corsOrigin.replace(/\/$/, ''), // Remove trailing slash
       'https://ems-frontend-ten-sandy.vercel.app'
     ]
   : ['http://localhost:5173', 'http://localhost:5174'];
@@ -40,10 +42,15 @@ app.use(cors({
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.includes(origin)) {
+    // Normalize origin by removing trailing slash
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const normalizedAllowedOrigins = allowedOrigins.map(o => o.replace(/\/$/, ''));
+    
+    if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
       callback(null, true);
     } else {
       console.log('❌ CORS blocked origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
