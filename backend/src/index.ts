@@ -28,21 +28,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware - CORS Configuration
-const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? [
-      'https://ems-frontend-beige-nine.vercel.app',
-      'https://ems-frontend-ten-sandy.vercel.app'
-    ]
-  : ['http://localhost:5173', 'http://localhost:5174'];
-
-console.log('🔧 CORS Configuration:', { 
-  NODE_ENV: process.env.NODE_ENV,
-  allowedOrigins 
-});
-
+// Middleware - CORS Configuration  
+// Temporarily allow all origins for debugging
 app.use(cors({
-  origin: allowedOrigins,
+  origin: true, // Allow all origins temporarily
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
