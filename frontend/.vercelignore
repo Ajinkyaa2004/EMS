@@ -1,0 +1,6 @@
+backend/
+api/
+*.md
+docker-compose.yml
+.git/
+.gitignore
