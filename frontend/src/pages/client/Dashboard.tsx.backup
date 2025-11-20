@@ -1,0 +1,569 @@
+import { useAuth } from '../../context/AuthContext';
+import { LogOut, Eye, Calendar, Users, CheckCircle, AlertCircle, Send, Mail } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+
+export default function ClientDashboard() {
+  const { user, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState('projects');
+  const [clientMessages, setClientMessages] = useState<any[]>([]);
+  const [adminReplies, setAdminReplies] = useState<any[]>([]);
+  const [dashboardMessages, setDashboardMessages] = useState<any[]>([]);
+  const [selectedReply, setSelectedReply] = useState<any>(null);
+  const [readReplies, setReadReplies] = useState<Set<number>>(new Set());
+  const [messageForm, setMessageForm] = useState({
+    subject: '',
+    content: '',
+  });
+
+  const handleLogout = () => {
+    logout();
+    window.location.href = '/';
+  };
+
+  // Load admin replies when component mounts
+  useEffect(() => {
+    const loadData = () => {
+      let allReplies = JSON.parse(localStorage.getItem('allClientReplies') || '[]');
+      
+      // Add sample replies if none exist
+      if (allReplies.length === 0) {
+        allReplies = [
+        {
+          _id: 1,
+          messageId: 1,
+          adminReply: 'Hi John,\n\nThank you for reaching out! We\'re making excellent progress on the website redesign. The homepage mockups are 85% complete and will be ready for your review by end of this week.\n\nThe current timeline remains on track for the December 31st deadline.\n\nBest regards,\nProject Manager',
+          repliedAt: new Date(Date.now() - 1 * 60 * 60 * 1000),
+          adminName: 'John Wilson',
+        },
+        {
+          _id: 2,
+          messageId: 2,
+          adminReply: 'Hi Sarah,\n\nThank you for informing us about the scope changes. We\'d be happy to discuss this with you.\n\nBased on the requirements you mentioned, we estimate an additional 40 hours of development work. This would add approximately $2,800 to the project cost.\n\nWould you like to schedule a meeting for tomorrow at 2 PM?\n\nRegards,\nBilling Team',
+          repliedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+          adminName: 'Jane Davis',
+        },
+        {
+          _id: 3,
+          messageId: 3,
+          adminReply: 'URGENT - We have received your alert and our senior database administrator is currently investigating the performance issues.\n\nInitial analysis suggests query optimization on the migration scripts is needed. We expect to have a fix deployed within the next 2 hours.\n\nWe will keep you updated every 30 minutes. Our emergency contact: +1-555-0123\n\nThank you for your patience!\nEmergency Response Team',
+          repliedAt: new Date(Date.now() - 7 * 60 * 60 * 1000),
+          adminName: 'Mike Johnson',
+        },
+        {
+          _id: 4,
+          messageId: 4,
+          adminReply: 'Hi Emily,\n\nThank you so much for the kind words! It was a pleasure working with your team on the API integration project. Your team\'s clear communication and feedback made the development process smooth and efficient.\n\nWe look forward to supporting your future projects as well. Please don\'t hesitate to reach out if you need anything!\n\nBest regards,\nProject Team',
+          repliedAt: new Date(Date.now() - 22 * 60 * 60 * 1000),
+          adminName: 'Sarah Chen',
+        },
+      ];
+      localStorage.setItem('allClientReplies', JSON.stringify(allReplies));
+    }
+    
+    setAdminReplies(allReplies);
+    
+    // Load read status
+    const readRepliesData = JSON.parse(localStorage.getItem('readClientReplies') || '[]');
+    setReadReplies(new Set(readRepliesData));
+    
+    // Load dashboard messages from admin
+    const allDashboardMessages = JSON.parse(localStorage.getItem('allDashboardMessages') || '[]');
+    setDashboardMessages(allDashboardMessages);
+    };
+
+    // Initial load
+    loadData();
+
+    // Auto-refresh data every 5 seconds for real-time updates
+    const interval = setInterval(() => {
+      loadData();
+    }, 5000); // Poll every 5 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Sample project data for client
+  const projects = [
+    {
+      id: 1,
+      name: 'Website Redesign',
+      description: 'Complete redesign of company website with modern UI/UX',
+      progress: 65,
+      status: 'In Progress',
+      startDate: '2025-10-01',
+      endDate: '2025-12-31',
+      team: ['John Doe', 'Jane Smith', 'Mike Johnson'],
+      updates: 12,
+      nextMilestone: 'Frontend Complete',
+      daysRemaining: 45,
+    },
+    {
+      id: 2,
+      name: 'Mobile App Development',
+      description: 'Native iOS and Android mobile application',
+      progress: 70,
+      status: 'In Progress',
+      startDate: '2025-11-01',
+      endDate: '2026-01-15',
+      team: ['Alice Brown', 'Bob Wilson', 'Carol Davis', 'David Lee'],
+      updates: 8,
+      nextMilestone: 'API Integration',
+      daysRemaining: 75,
+    },
+    {
+      id: 3,
+      name: 'Database Migration',
+      description: 'Migration from legacy database to modern cloud solution',
+      progress: 90,
+      status: 'In Progress',
+      startDate: '2025-09-15',
+      endDate: '2025-11-30',
+      team: ['Eve Martinez', 'Frank Garcia'],
+      updates: 15,
+      nextMilestone: 'Testing & Validation',
+      daysRemaining: 14,
+    },
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+      {/* Header */}
+      <header className="bg-gradient-to-r from-purple-600 to-purple-800 shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Project Progress</h1>
+            <p className="text-purple-100">Welcome, {user?.firstName} {user?.lastName}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+          >
+            <LogOut className="w-5 h-5" />
+            Logout
+          </button>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Navigation Tabs */}
+        <div className="flex gap-4 mb-8 border-b border-gray-600">
+          <button
+            onClick={() => setActiveTab('projects')}
+            className={`pb-3 px-4 font-semibold transition border-b-2 ${
+              activeTab === 'projects'
+                ? 'border-purple-500 text-purple-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            Projects
+          </button>
+          <button
+            onClick={() => setActiveTab('messages')}
+            className={`pb-3 px-4 font-semibold transition border-b-2 flex items-center gap-2 ${
+              activeTab === 'messages'
+                ? 'border-purple-500 text-purple-400'
+                : 'border-transparent text-gray-400 hover:text-gray-300'
+            }`}
+          >
+            <Mail className="w-4 h-4" />
+            Messages
+          </button>
+        </div>
+
+        {/* Projects Tab */}
+        {activeTab === 'projects' && (
+        <div className="mb-8">
+          <h2 className="text-2xl font-bold text-white mb-6">Your Projects</h2>
+          
+          {projects.length === 0 ? (
+            <div className="bg-gray-700 rounded-lg shadow-lg p-8 text-center">
+              <Eye className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+              <p className="text-gray-400 text-lg">No projects assigned yet</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {projects.map((project) => (
+                <div key={project.id} className="bg-gray-700 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                  {/* Project Header */}
+                  <div className="bg-gradient-to-r from-purple-600 to-purple-700 px-6 py-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h3 className="text-2xl font-bold text-white">{project.name}</h3>
+                        <p className="text-purple-100 text-sm mt-1">{project.description}</p>
+                      </div>
+                      <span className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                        project.status === 'In Progress' ? 'bg-green-500 text-white' : 'bg-blue-500 text-white'
+                      }`}>
+                        {project.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Project Body */}
+                  <div className="px-6 py-6">
+                    {/* Progress Section */}
+                    <div className="mb-6">
+                      <div className="flex justify-between items-center mb-3">
+                        <span className="text-gray-300 font-semibold">Overall Progress</span>
+                        <span className="text-2xl font-bold text-white">{project.progress}% done</span>
+                      </div>
+                      <div className="w-full bg-gray-600 rounded-full h-6 overflow-hidden relative flex items-center">
+                        <div 
+                          className="bg-gradient-to-r from-green-400 to-green-600 h-full transition-all duration-500 rounded-full flex items-center justify-center"
+                          style={{ width: `${project.progress}%` }}
+                        >
+                          <span className="text-xs font-bold text-white drop-shadow-md">
+                            {project.progress}%
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Info Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                      <div className="bg-gray-800 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Calendar className="w-5 h-5 text-blue-400" />
+                          <span className="text-gray-400 text-sm">Timeline</span>
+                        </div>
+                        <p className="text-white font-semibold">{project.startDate} to {project.endDate}</p>
+                        <p className="text-green-400 text-sm mt-1">{project.daysRemaining} days remaining</p>
+                      </div>
+
+                      <div className="bg-gray-800 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Users className="w-5 h-5 text-blue-400" />
+                          <span className="text-gray-400 text-sm">Team Members</span>
+                        </div>
+                        <p className="text-white font-semibold">{project.team.length} members</p>
+                        <div className="flex gap-1 mt-2">
+                          {project.team.slice(0, 3).map((member, idx) => (
+                            <div key={idx} className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-xs text-white font-bold">
+                              {member.charAt(0)}
+                            </div>
+                          ))}
+                          {project.team.length > 3 && (
+                            <div className="w-6 h-6 bg-gray-500 rounded-full flex items-center justify-center text-xs text-white font-bold">
+                              +{project.team.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="bg-gray-800 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CheckCircle className="w-5 h-5 text-green-400" />
+                          <span className="text-gray-400 text-sm">Next Milestone</span>
+                        </div>
+                        <p className="text-white font-semibold">{project.nextMilestone}</p>
+                      </div>
+
+                      <div className="bg-gray-800 rounded-lg p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <AlertCircle className="w-5 h-5 text-orange-400" />
+                          <span className="text-gray-400 text-sm">Updates</span>
+                        </div>
+                        <p className="text-white font-semibold">{project.updates} updates</p>
+                        <p className="text-gray-400 text-sm mt-1">Latest activity</p>
+                      </div>
+                    </div>
+
+                    {/* Team Members List */}
+                    <div className="bg-gray-800 rounded-lg p-4">
+                      <h4 className="text-white font-semibold mb-3">Assigned Team</h4>
+                      <div className="space-y-2">
+                        {project.team.map((member, idx) => (
+                          <div key={idx} className="flex items-center gap-3 p-2 hover:bg-gray-700 rounded transition">
+                            <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                              {member.charAt(0)}
+                            </div>
+                            <span className="text-gray-300">{member}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Footer */}
+                  <div className="bg-gray-800 px-6 py-4 flex justify-between items-center">
+                    <span className="text-gray-400 text-sm">Last updated: Today</span>
+                    <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition">
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        )}
+
+        {/* Messages Tab */}
+        {activeTab === 'messages' && (
+          <div className="space-y-6">
+            {/* Send Message Form */}
+            <div className="bg-gray-700 rounded-lg shadow-lg p-6">
+              <h2 className="text-2xl font-bold text-white mb-6">Contact Admin</h2>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!messageForm.subject || !messageForm.content) {
+                    toast.error('Please fill in all fields');
+                    return;
+                  }
+                  // Add message to list
+                  const newMessage = {
+                    _id: Date.now(),
+                    subject: messageForm.subject,
+                    content: messageForm.content,
+                    sentAt: new Date(),
+                    sender: `${user?.firstName} ${user?.lastName}`,
+                    clientId: user?._id,
+                    clientName: user?.firstName + ' ' + user?.lastName,
+                  };
+                  setClientMessages([newMessage, ...clientMessages]);
+                  
+                  // Store in localStorage for admin to retrieve
+                  const allClientMessages = JSON.parse(localStorage.getItem('allClientMessages') || '[]');
+                  allClientMessages.unshift(newMessage);
+                  localStorage.setItem('allClientMessages', JSON.stringify(allClientMessages));
+                  
+                  setMessageForm({ subject: '', content: '' });
+                  toast.success('Message sent to admin successfully!');
+                }}
+                className="space-y-4"
+              >
+                {/* Subject */}
+                <div>
+                  <label className="block text-gray-300 font-semibold mb-2">Subject</label>
+                  <input
+                    type="text"
+                    value={messageForm.subject}
+                    onChange={(e) => setMessageForm({ ...messageForm, subject: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-purple-500 transition"
+                    placeholder="Message subject..."
+                    required
+                  />
+                </div>
+
+                {/* Message Content */}
+                <div>
+                  <label className="block text-gray-300 font-semibold mb-2">Message</label>
+                  <textarea
+                    value={messageForm.content}
+                    onChange={(e) => setMessageForm({ ...messageForm, content: e.target.value })}
+                    className="w-full bg-gray-800 border border-gray-600 rounded px-4 py-2 text-white focus:outline-none focus:border-purple-500 transition resize-none"
+                    rows={5}
+                    placeholder="Type your message here..."
+                    required
+                  ></textarea>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-6 rounded transition w-full flex items-center justify-center gap-2"
+                >
+                  <Send className="w-4 h-4" />
+                  Send Message
+                </button>
+              </form>
+            </div>
+
+            {/* Admin Dashboard Messages */}
+            {dashboardMessages.length > 0 && (
+              <div className="bg-gray-700 rounded-lg shadow-lg p-6">
+                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                  📨 Admin Messages
+                </h3>
+                <div className="space-y-3">
+                  {dashboardMessages.map((msg: any) => (
+                    <div 
+                      key={msg._id} 
+                      className="bg-gray-800 rounded p-4 border border-blue-600 hover:border-blue-500 transition"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="text-blue-400 font-semibold">{msg.subject}</p>
+                          <p className="text-gray-400 text-sm">From: Admin ({msg.sender})</p>
+                        </div>
+                        <span className="bg-blue-600 text-white text-xs px-2 py-1 rounded flex items-center gap-1">
+                          📧 {msg.app}
+                        </span>
+                      </div>
+                      <div className="bg-blue-900/10 rounded p-3 mb-2 border-l-4 border-blue-500">
+                        <p className="text-gray-200 text-sm whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                      <p className="text-gray-500 text-xs">{new Date(msg.sentAt).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Your Messages */}
+            <div className="bg-gray-700 rounded-lg shadow-lg p-6">
+              <h3 className="text-xl font-bold text-white mb-4">Your Messages</h3>
+              {clientMessages.length === 0 ? (
+                <p className="text-gray-400 text-center py-8">No messages sent yet</p>
+              ) : (
+                <div className="space-y-3">
+                  {clientMessages.map((msg: any) => (
+                    <div key={msg._id} className="bg-gray-800 rounded p-4 border border-gray-600 hover:border-purple-500 transition">
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="text-white font-semibold">{msg.subject}</p>
+                          <p className="text-gray-400 text-sm">From: {msg.sender}</p>
+                        </div>
+                        <span className="bg-green-600 text-white text-xs px-2 py-1 rounded">Sent</span>
+                      </div>
+                      <p className="text-gray-300 text-sm">{msg.content}</p>
+                      <p className="text-gray-500 text-xs mt-2">{new Date(msg.sentAt).toLocaleString()}</p>
+                      
+                      {/* Show replies for this message */}
+                      {adminReplies.filter((r: any) => r.messageId === msg._id).length > 0 && (
+                        <div className="mt-4 pt-4 border-t border-gray-700">
+                          <p className="text-green-400 text-sm font-semibold mb-2">📧 Admin Reply:</p>
+                          {adminReplies.filter((r: any) => r.messageId === msg._id).map((reply: any) => (
+                            <div key={reply._id} className="bg-green-900/20 rounded p-3 border-l-4 border-green-500">
+                              <p className="text-gray-200 text-sm whitespace-pre-wrap">{reply.adminReply}</p>
+                              <p className="text-gray-400 text-xs mt-2">
+                                <span className="font-semibold">From:</span> {reply.adminName} • {new Date(reply.repliedAt).toLocaleString()}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Admin Replies Section */}
+            {adminReplies.length > 0 && (
+              <div className="bg-gray-700 rounded-lg shadow-lg p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                    📬 Recent Admin Replies
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setReadReplies(new Set());
+                      localStorage.setItem('readClientReplies', JSON.stringify([]));
+                    }}
+                    className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded transition"
+                  >
+                    Mark all as Unread
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  {adminReplies.map((reply: any) => {
+                    const originalMsg = clientMessages.find((m: any) => m._id === reply.messageId);
+                    const isRead = readReplies.has(reply._id);
+                    return (
+                      <div 
+                        key={reply._id} 
+                        onClick={() => {
+                          setSelectedReply(reply);
+                          const newReadReplies = new Set(readReplies);
+                          newReadReplies.add(reply._id);
+                          setReadReplies(newReadReplies);
+                          localStorage.setItem('readClientReplies', JSON.stringify(Array.from(newReadReplies)));
+                        }}
+                        className={`rounded p-4 border cursor-pointer transition ${
+                          isRead 
+                            ? 'bg-gray-800 border-green-600 hover:border-green-500' 
+                            : 'bg-green-900/20 border-green-500 hover:border-green-400 shadow-lg shadow-green-500/20'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1">
+                            <p className="text-green-400 font-semibold">{originalMsg?.subject || 'Message'}</p>
+                            <p className="text-gray-400 text-sm">From: {reply.adminName}</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {!isRead && (
+                              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                            )}
+                            <span className={`text-xs px-2 py-1 rounded ${isRead ? 'bg-gray-600 text-gray-300' : 'bg-green-600 text-white'}`}>
+                              {isRead ? 'Read' : 'New'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="bg-green-900/10 rounded p-3 mb-2 border-l-4 border-green-500">
+                          <p className="text-gray-200 text-sm line-clamp-2">{reply.adminReply}</p>
+                        </div>
+                        <p className="text-gray-500 text-xs">{new Date(reply.repliedAt).toLocaleString()}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* Reply Detail Modal */}
+      {selectedReply && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedReply(null)}
+        >
+          <div 
+            className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-green-600 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-green-600 to-green-800 px-6 py-4 flex justify-between items-center border-b border-gray-600 sticky top-0">
+              <div>
+                <h3 className="text-xl font-bold text-white">Admin Reply</h3>
+                <p className="text-green-100 text-sm">From: {selectedReply.adminName}</p>
+              </div>
+              <button
+                onClick={() => setSelectedReply(null)}
+                className="text-white hover:text-gray-300 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              {/* Timestamp */}
+              <p className="text-gray-400 text-sm">
+                📅 {new Date(selectedReply.repliedAt).toLocaleString()}
+              </p>
+
+              {/* Reply Content */}
+              <div className="bg-green-900/20 rounded-lg p-4 border border-green-600">
+                <p className="text-gray-200 whitespace-pre-wrap text-base leading-relaxed">
+                  {selectedReply.adminReply}
+                </p>
+              </div>
+
+              {/* Status Badge */}
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-2 bg-green-600/20 text-green-300 px-3 py-1 rounded-full text-sm">
+                  ✓ Marked as Read
+                </span>
+              </div>
+
+              {/* Close Button */}
+              <div className="flex gap-2 justify-end pt-4 border-t border-gray-700">
+                <button
+                  onClick={() => setSelectedReply(null)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded transition"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

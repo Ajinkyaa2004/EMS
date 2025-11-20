@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: ems-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - ems-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ems-backend
+    ports:
+      - "5000:5000"
+    environment:
+      MONGODB_URI: mongodb://admin:password@mongodb:27017/ems?authSource=admin
+      JWT_SECRET: your_jwt_secret_key_here
+      JWT_REFRESH_SECRET: your_jwt_refresh_secret_key_here
+      NODE_ENV: development
+      CORS_ORIGIN: http://localhost:5173
+    depends_on:
+      - mongodb
+    networks:
+      - ems-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ems-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:5000
+    depends_on:
+      - backend
+    networks:
+      - ems-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  ems-network:
+    driver: bridge

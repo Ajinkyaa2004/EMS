@@ -1,0 +1,10 @@
+# Keep dist folder - we need it!
+!dist/
+# Ignore everything else that's not needed
+node_modules/
+.env
+*.log
+src/
+*.ts
+!api/
+tsconfig.json
