@@ -28,14 +28,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-const corsOrigin = process.env.CORS_ORIGIN || 'https://ems-frontend-ten-sandy.vercel.app';
-// Remove trailing slash and ensure we have the correct origin
-const frontendOrigin = corsOrigin.replace(/\/$/, '');
-
+// Middleware - CORS Configuration
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      frontendOrigin,
       'https://ems-frontend-beige-nine.vercel.app',
       'https://ems-frontend-ten-sandy.vercel.app'
     ]
@@ -43,30 +38,16 @@ const allowedOrigins = process.env.NODE_ENV === 'production'
 
 console.log('🔧 CORS Configuration:', { 
   NODE_ENV: process.env.NODE_ENV,
-  frontendOrigin,
   allowedOrigins 
 });
 
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    // Normalize origin by removing trailing slash
-    const normalizedOrigin = origin.replace(/\/$/, '');
-    
-    if (allowedOrigins.includes(normalizedOrigin)) {
-      console.log('✅ CORS allowed for origin:', origin);
-      callback(null, true);
-    } else {
-      console.log('❌ CORS blocked origin:', origin);
-      console.log('   Allowed origins:', allowedOrigins);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600
 }));
 app.use(express.json());
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
