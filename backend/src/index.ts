@@ -30,12 +30,22 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 const corsOrigin = process.env.CORS_ORIGIN || 'https://ems-frontend-ten-sandy.vercel.app';
+// Remove trailing slash and ensure we have the correct origin
+const frontendOrigin = corsOrigin.replace(/\/$/, '');
+
 const allowedOrigins = process.env.NODE_ENV === 'production'
   ? [
-      corsOrigin.replace(/\/$/, ''), // Remove trailing slash
+      frontendOrigin,
+      'https://ems-frontend-beige-nine.vercel.app',
       'https://ems-frontend-ten-sandy.vercel.app'
     ]
   : ['http://localhost:5173', 'http://localhost:5174'];
+
+console.log('🔧 CORS Configuration:', { 
+  NODE_ENV: process.env.NODE_ENV,
+  frontendOrigin,
+  allowedOrigins 
+});
 
 app.use(cors({
   origin: (origin, callback) => {
@@ -44,13 +54,13 @@ app.use(cors({
     
     // Normalize origin by removing trailing slash
     const normalizedOrigin = origin.replace(/\/$/, '');
-    const normalizedAllowedOrigins = allowedOrigins.map(o => o.replace(/\/$/, ''));
     
-    if (normalizedAllowedOrigins.includes(normalizedOrigin)) {
+    if (allowedOrigins.includes(normalizedOrigin)) {
+      console.log('✅ CORS allowed for origin:', origin);
       callback(null, true);
     } else {
       console.log('❌ CORS blocked origin:', origin);
-      console.log('Allowed origins:', allowedOrigins);
+      console.log('   Allowed origins:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
