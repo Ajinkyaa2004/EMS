@@ -297,7 +297,28 @@ attendanceRoutes.get('/admin/report/weekly', authMiddleware, async (req: AuthReq
         const attendance = await Attendance.find({
           employeeId: employee._id,
           date: { $gte: startDate, $lte: endDate },
-        }).populate('selectedProjectId', 'title');
+        }).populate({
+          path: 'selectedProjectId',
+          select: 'title projectLeader',
+          populate: {
+            path: 'projectLeader',
+            select: 'firstName lastName'
+          }
+        });
+
+        // Extract unique projects with their leaders
+        const projectsMap = new Map();
+        attendance.forEach(a => {
+          if (a.selectedProjectId) {
+            const project = a.selectedProjectId as any;
+            if (project.title && !projectsMap.has(project.title)) {
+              projectsMap.set(project.title, {
+                title: project.title,
+                leader: project.projectLeader ? `${project.projectLeader.firstName} ${project.projectLeader.lastName}` : null
+              });
+            }
+          }
+        });
 
         const stats = {
           totalDays: attendance.length,
@@ -315,6 +336,7 @@ attendanceRoutes.get('/admin/report/weekly', authMiddleware, async (req: AuthReq
             .map(a => (a.selectedProjectId as any)?.title)
             .filter(title => title)
           )],
+          projectDetails: Array.from(projectsMap.values()),
         };
 
         return {
@@ -361,7 +383,28 @@ attendanceRoutes.get('/admin/report/monthly', authMiddleware, async (req: AuthRe
         const attendance = await Attendance.find({
           employeeId: employee._id,
           date: { $gte: startDate, $lte: endDate },
-        }).populate('selectedProjectId', 'title');
+        }).populate({
+          path: 'selectedProjectId',
+          select: 'title projectLeader',
+          populate: {
+            path: 'projectLeader',
+            select: 'firstName lastName'
+          }
+        });
+
+        // Extract unique projects with their leaders
+        const projectsMap = new Map();
+        attendance.forEach(a => {
+          if (a.selectedProjectId) {
+            const project = a.selectedProjectId as any;
+            if (project.title && !projectsMap.has(project.title)) {
+              projectsMap.set(project.title, {
+                title: project.title,
+                leader: project.projectLeader ? `${project.projectLeader.firstName} ${project.projectLeader.lastName}` : null
+              });
+            }
+          }
+        });
 
         const stats = {
           totalDays: attendance.length,
@@ -379,6 +422,7 @@ attendanceRoutes.get('/admin/report/monthly', authMiddleware, async (req: AuthRe
             .map(a => (a.selectedProjectId as any)?.title)
             .filter(title => title)
           )],
+          projectDetails: Array.from(projectsMap.values()),
         };
 
         return {

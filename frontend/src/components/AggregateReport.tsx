@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Download, TrendingUp, Users, CheckCircle, AlertCircle, Clock, FileText, Search, X, RefreshCw } from 'lucide-react';
+import { Calendar, Download, TrendingUp, Users, CheckCircle, AlertCircle, Clock, FileText, Search, X, RefreshCw, Crown } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { getToken } from '../utils/auth';
@@ -20,6 +20,10 @@ interface EmployeeStats {
   onLeave: number;
   attendanceRate: number | string;
   projects: string[];
+  projectDetails?: Array<{
+    title: string;
+    leader: string | null;
+  }>;
 }
 
 interface ReportData {
@@ -528,7 +532,22 @@ export default function AggregateReport() {
                             </td>
                             <td className="px-2 sm:px-3 md:px-6 py-2 sm:py-3 md:py-4 hidden xl:table-cell">
                               <div className="flex flex-wrap gap-1">
-                                {employee.projects && employee.projects.length > 0 ? (
+                                {employee.projectDetails && employee.projectDetails.length > 0 ? (
+                                  employee.projectDetails.map((project, idx) => (
+                                    <div
+                                      key={idx}
+                                      className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded flex items-center gap-1"
+                                    >
+                                      <span>{project.title}</span>
+                                      {project.leader && (
+                                        <span className="flex items-center gap-0.5 text-yellow-600 font-semibold" title={`Leader: ${project.leader}`}>
+                                          <Crown className="w-3 h-3" />
+                                          <span className="text-[10px]">{project.leader}</span>
+                                        </span>
+                                      )}
+                                    </div>
+                                  ))
+                                ) : employee.projects && employee.projects.length > 0 ? (
                                   employee.projects.map((project, idx) => (
                                     <span
                                       key={idx}

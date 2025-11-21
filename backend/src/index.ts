@@ -20,6 +20,7 @@ import messageRoutes from './routes/messages.js';
 import pointsRoutes from './routes/points.js';
 import trainingRoutes from './routes/training.js';
 import hackathonRoutes from './routes/hackathon.js';
+import volunteerLeaderRoutes from './routes/volunteerLeader.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import { authMiddleware } from './middleware/auth.js';
 
@@ -139,6 +140,7 @@ app.use('/api/messages', authMiddleware, messageRoutes);
 app.use('/api/points', authMiddleware, pointsRoutes);
 app.use('/api/training', authMiddleware, trainingRoutes);
 app.use('/api/hackathon', authMiddleware, hackathonRoutes);
+app.use('/api/volunteer-leader', volunteerLeaderRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -1,5 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
-import { LogOut, Briefcase, FileText, CheckSquare, Menu, X, ChevronLeft, ChevronRight, BarChart3, Zap, Video, Calendar, Clock, Users, Timer, RefreshCw, Mail } from 'lucide-react';
+import { LogOut, Briefcase, FileText, CheckSquare, Menu, X, ChevronLeft, ChevronRight, BarChart3, Zap, Video, Calendar, Clock, Users, Timer, RefreshCw, Mail, Flame } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import AttendanceCard from '../../components/AttendanceCard';
 import PointsSummary from '../../components/PointsSummary';
 import PointsLeaderboard from '../../components/PointsLeaderboard';
+import VolunteerLeaderCard from '../../components/VolunteerLeaderCard';
 import { useRealtimeUpdates } from '../../hooks/useRealtimeUpdates';
 import { EVENTS, eventEmitter } from '../../utils/eventEmitter';
 import { getToken } from '../../utils/auth';
@@ -396,6 +397,7 @@ export default function EmployeeDashboard() {
         <nav className="p-3 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 5rem)' }}>
           {[
             { id: 'attendance', label: 'Attendance', icon: CheckSquare },
+            { id: 'volunteer', label: 'Volunteer Leader', icon: Flame },
             { id: 'points', label: 'My Points', icon: Zap },
             { id: 'tasks', label: 'My Tasks', icon: CheckSquare },
             { id: 'projects', label: 'My Projects', icon: Briefcase },
@@ -462,6 +464,7 @@ export default function EmployeeDashboard() {
         <nav className="p-3 sm:p-4 space-y-1 pb-6">
           {[
             { id: 'attendance', label: 'Attendance', icon: CheckSquare },
+            { id: 'volunteer', label: 'Volunteer Leader', icon: Flame },
             { id: 'points', label: 'My Points', icon: Zap },
             { id: 'tasks', label: 'My Tasks', icon: CheckSquare },
             { id: 'projects', label: 'My Projects', icon: Briefcase },
@@ -746,6 +749,11 @@ export default function EmployeeDashboard() {
             <PointsSummary />
             <PointsLeaderboard />
           </div>
+        )}
+
+        {/* Volunteer Leader Tab */}
+        {activeTab === 'volunteer' && (
+          <VolunteerLeaderCard />
         )}
 
         {activeTab === 'attendance' && (
